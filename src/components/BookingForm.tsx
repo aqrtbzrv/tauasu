@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Booking, Zone } from '@/lib/types';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -351,18 +350,12 @@ const BookingForm = ({
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Выберите зону" />
                   </SelectTrigger>
-                  <SelectContent position={selectPosition} className="max-h-[350px] overflow-auto">
-                    <ScrollArea className="h-[200px] max-h-[350px]">
-                      {availableZones.length > 0 ? availableZones.map(zone => (
-                        <SelectItem key={zone.id} value={zone.id}>
+                  <SelectContent position={selectPosition} className="max-h-[50vh]">
+                    {availableZones.length > 0 ? availableZones.map(zone => <SelectItem key={zone.id} value={zone.id}>
                           {zone.name} ({zone.type})
-                        </SelectItem>
-                      )) : (
-                        <div className="p-2 text-center text-muted-foreground">
-                          Нет доступных зон на выбранную дату
-                        </div>
-                      )}
-                    </ScrollArea>
+                        </SelectItem>) : <div className="p-2 text-center text-muted-foreground">
+                        Нет доступных зон на выбранную дату
+                      </div>}
                   </SelectContent>
                 </Select>
                 

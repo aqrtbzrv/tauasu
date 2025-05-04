@@ -1,6 +1,7 @@
 
 import { useEffect } from "react";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -27,8 +28,8 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {/* Use only Sonner Toaster to avoid conflicts */}
-        <Toaster className="toaster group" theme={theme} />
+        <Toaster />
+        <Sonner />
         <BrowserRouter>
           <Routes>
             <Route 
