@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ZoneSelectionDialog from './ZoneSelectionDialog';
 
 interface BookingFormProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ const BookingForm = ({
   const [activeTab, setActiveTab] = useState('zone');
   const [timeOptions, setTimeOptions] = useState<string[]>([]);
   const [customZoneName, setCustomZoneName] = useState('');
+  const [isZoneDialogOpen, setIsZoneDialogOpen] = useState(false);
 
   useEffect(() => {
     const options = [];
@@ -131,6 +133,13 @@ const BookingForm = ({
     setFormData({
       ...formData,
       [name]: value === '' ? null : Number(value)
+    });
+  };
+
+  const handleSelectZone = (zoneId: string) => {
+    setFormData({
+      ...formData,
+      zoneId
     });
   };
 
@@ -231,6 +240,14 @@ const BookingForm = ({
     }
   };
 
+  const openZoneDialog = () => {
+    setIsZoneDialogOpen(true);
+  };
+
+  const closeZoneDialog = () => {
+    setIsZoneDialogOpen(false);
+  };
+
   const handleSubmit = () => {
     if (!formData.zoneId) {
       toast.error('Выберите зону');
@@ -302,6 +319,7 @@ const BookingForm = ({
   };
 
   const isDisabled = !isAdmin;
+  const selectedZone = zones.find(z => z.id === formData.zoneId);
 
   if (!isAdmin && !isEditingBooking) {
     return null;
@@ -314,268 +332,286 @@ const BookingForm = ({
 
   const selectPosition = isMobile ? "item-aligned" : "popper";
 
-  return <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] w-[calc(100%-2rem)] mx-auto max-h-[90vh] overflow-y-auto rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            {isEditingBooking ? 'Детали бронирования' : 'Новое бронирование'}
-          </DialogTitle>
-        </DialogHeader>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-6">
-            <TabsTrigger value="zone" className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              <span>Выбор зоны</span>
-            </TabsTrigger>
-            <TabsTrigger value="client" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span>Клиент</span>
-            </TabsTrigger>
-            <TabsTrigger value="details" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>Детали</span>
-            </TabsTrigger>
-          </TabsList>
+  return (
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[600px] w-[calc(100%-2rem)] mx-auto max-h-[90vh] overflow-y-auto rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {isEditingBooking ? 'Детали бронирования' : 'Новое бронирование'}
+            </DialogTitle>
+          </DialogHeader>
           
-          <TabsContent value="zone">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="zoneId" className="text-base font-medium flex items-center gap-2">
-                  <Home className="h-4 w-4 text-green-600" />
-                  <span>Выберите зону</span>
-                </Label>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-3 mb-6">
+              <TabsTrigger value="zone" className="flex items-center gap-2">
+                <Home className="h-4 w-4" />
+                <span>Выбор зоны</span>
+              </TabsTrigger>
+              <TabsTrigger value="client" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span>Клиент</span>
+              </TabsTrigger>
+              <TabsTrigger value="details" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>Детали</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="zone">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="zoneId" className="text-base font-medium flex items-center gap-2">
+                    <Home className="h-4 w-4 text-green-600" />
+                    <span>Выберите зону</span>
+                  </Label>
+                  
+                  <Button 
+                    onClick={openZoneDialog}
+                    className="w-full justify-between h-12"
+                    variant="outline"
+                    disabled={isDisabled}
+                  >
+                    {selectedZone ? (
+                      <span>{selectedZone.name} ({selectedZone.type})</span>
+                    ) : formData.zoneId === 'other' ? (
+                      <span>Другая зона</span>
+                    ) : (
+                      <span className="text-muted-foreground">Выберите зону</span>
+                    )}
+                    <Home className="h-4 w-4 ml-2" />
+                  </Button>
+                  
+                  {formData.zoneId === 'other' && (
+                    <div className="mt-4">
+                      <Label htmlFor="customZoneName" className="text-base font-medium">
+                        Введите название зоны
+                      </Label>
+                      <Input 
+                        id="customZoneName" 
+                        name="customZoneName" 
+                        value={customZoneName} 
+                        onChange={handleCustomZoneNameChange} 
+                        placeholder="Введите название зоны" 
+                        className="h-12 mt-2" 
+                        required 
+                        disabled={isDisabled} 
+                      />
+                    </div>
+                  )}
+                  
+                  {formData.zoneId && formData.zoneId !== 'other' && (
+                    <div className="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900">
+                      <h3 className="font-medium mb-2 text-green-800 dark:text-green-300">
+                        Выбранная зона:
+                      </h3>
+                      <p className="text-sm text-green-700 dark:text-green-400">
+                        <strong>{zones.find(z => z.id === formData.zoneId)?.name}</strong> 
+                        {' '}({zones.find(z => z.id === formData.zoneId)?.type})
+                      </p>
+                    </div>
+                  )}
+                </div>
                 
-                <Select value={formData.zoneId} onValueChange={value => handleSelectChange('zoneId', value)} disabled={isDisabled}>
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Выберите зону" />
-                  </SelectTrigger>
-                  <SelectContent position={selectPosition} className="max-h-[50vh]">
-                    {availableZones.length > 0 ? availableZones.map(zone => <SelectItem key={zone.id} value={zone.id}>
-                          {zone.name} ({zone.type})
-                        </SelectItem>) : <div className="p-2 text-center text-muted-foreground">
-                        Нет доступных зон на выбранную дату
-                      </div>}
-                  </SelectContent>
-                </Select>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={handleCancel}>
+                    Отмена
+                  </Button>
+                  {!isDisabled && <Button onClick={moveToNextTab}>
+                      Далее
+                    </Button>}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="client">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="clientName" className="text-base font-medium flex items-center gap-2">
+                    <Users className="h-4 w-4 text-green-600" />
+                    <span>Имя клиента</span>
+                  </Label>
+                  <Input id="clientName" name="clientName" value={formData.clientName} onChange={handleChange} placeholder="Введите имя клиента" className="h-12" required disabled={isDisabled} />
+                </div>
                 
-                {formData.zoneId === 'other' && (
-                  <div className="mt-4">
-                    <Label htmlFor="customZoneName" className="text-base font-medium">
-                      Введите название зоны
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber" className="text-base font-medium flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-green-600" />
+                    <span>Номер телефона</span>
+                  </Label>
+                  <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="+7 (XXX) XXX-XX-XX" className="h-12" required disabled={isDisabled} />
+                </div>
+                
+                <div className="flex justify-between gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={moveToPrevTab}>
+                    Назад
+                  </Button>
+                  {!isDisabled && <Button onClick={moveToNextTab}>
+                      Далее
+                    </Button>}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="details">
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="rentalCost" className="text-base font-medium flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                      <span>Стоимость аренды</span>
                     </Label>
                     <Input 
-                      id="customZoneName" 
-                      name="customZoneName" 
-                      value={customZoneName} 
-                      onChange={handleCustomZoneNameChange} 
-                      placeholder="Введите название зоны" 
-                      className="h-12 mt-2" 
+                      id="rentalCost" 
+                      name="rentalCost" 
+                      type="number" 
+                      value={formData.rentalCost === null ? '' : formData.rentalCost} 
+                      onChange={handleNumberChange} 
+                      min={0} 
+                      className="h-12" 
+                      placeholder="Введите стоимость"
                       required 
                       disabled={isDisabled} 
                     />
                   </div>
-                )}
-                
-                {formData.zoneId && formData.zoneId !== 'other' && <div className="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900">
-                    <h3 className="font-medium mb-2 text-green-800 dark:text-green-300">
-                      Выбранная зона:
-                    </h3>
-                    <p className="text-sm text-green-700 dark:text-green-400">
-                      <strong>{zones.find(z => z.id === formData.zoneId)?.name}</strong> 
-                      {' '}({zones.find(z => z.id === formData.zoneId)?.type})
-                    </p>
-                  </div>}
-              </div>
-              
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={handleCancel}>
-                  Отмена
-                </Button>
-                {!isDisabled && <Button onClick={moveToNextTab}>
-                    Далее
-                  </Button>}
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="client">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="clientName" className="text-base font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4 text-green-600" />
-                  <span>Имя клиента</span>
-                </Label>
-                <Input id="clientName" name="clientName" value={formData.clientName} onChange={handleChange} placeholder="Введите имя клиента" className="h-12" required disabled={isDisabled} />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber" className="text-base font-medium flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-green-600" />
-                  <span>Номер телефона</span>
-                </Label>
-                <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="+7 (XXX) XXX-XX-XX" className="h-12" required disabled={isDisabled} />
-              </div>
-              
-              <div className="flex justify-between gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={moveToPrevTab}>
-                  Назад
-                </Button>
-                {!isDisabled && <Button onClick={moveToNextTab}>
-                    Далее
-                  </Button>}
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="details">
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rentalCost" className="text-base font-medium flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-green-600" />
-                    <span>Стоимость аренды</span>
-                  </Label>
-                  <Input 
-                    id="rentalCost" 
-                    name="rentalCost" 
-                    type="number" 
-                    value={formData.rentalCost === null ? '' : formData.rentalCost} 
-                    onChange={handleNumberChange} 
-                    min={0} 
-                    className="h-12" 
-                    placeholder="Введите стоимость"
-                    required 
-                    disabled={isDisabled} 
-                  />
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="prepayment" className="text-base font-medium flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                      <span>Предоплата</span>
+                    </Label>
+                    <Input 
+                      id="prepayment" 
+                      name="prepayment" 
+                      type="number" 
+                      value={formData.prepayment === null ? '' : formData.prepayment} 
+                      onChange={handleNumberChange} 
+                      min={0} 
+                      className="h-12" 
+                      placeholder="Введите предоплату"
+                      required 
+                      disabled={isDisabled} 
+                    />
+                  </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="prepayment" className="text-base font-medium flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-green-600" />
-                    <span>Предоплата</span>
-                  </Label>
-                  <Input 
-                    id="prepayment" 
-                    name="prepayment" 
-                    type="number" 
-                    value={formData.prepayment === null ? '' : formData.prepayment} 
-                    onChange={handleNumberChange} 
-                    min={0} 
-                    className="h-12" 
-                    placeholder="Введите предоплату"
-                    required 
-                    disabled={isDisabled} 
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="personCount" className="text-base font-medium flex items-center gap-2">
+                      <Users className="h-4 w-4 text-green-600" />
+                      <span>Количество гостей</span>
+                    </Label>
+                    <Input 
+                      id="personCount" 
+                      name="personCount" 
+                      type="number" 
+                      value={formData.personCount === null ? '' : formData.personCount} 
+                      onChange={handleNumberChange} 
+                      min={1} 
+                      className="h-12" 
+                      placeholder="Введите количество"
+                      required 
+                      disabled={isDisabled} 
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="bookingDate" className="text-base font-medium flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-green-600" />
+                      <span>Дата бронирования</span>
+                    </Label>
+                    <Input 
+                      id="bookingDate" 
+                      type="date" 
+                      value={formData.dateTime?.split('T')[0]} 
+                      onChange={handleDateChange} 
+                      className="h-12" 
+                      required 
+                      disabled={isDisabled} 
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="personCount" className="text-base font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4 text-green-600" />
-                    <span>Количество гостей</span>
-                  </Label>
-                  <Input 
-                    id="personCount" 
-                    name="personCount" 
-                    type="number" 
-                    value={formData.personCount === null ? '' : formData.personCount} 
-                    onChange={handleNumberChange} 
-                    min={1} 
-                    className="h-12" 
-                    placeholder="Введите количество"
-                    required 
-                    disabled={isDisabled} 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="bookingDate" className="text-base font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-green-600" />
-                    <span>Дата бронирования</span>
-                  </Label>
-                  <Input 
-                    id="bookingDate" 
-                    type="date" 
-                    value={formData.dateTime?.split('T')[0]} 
-                    onChange={handleDateChange} 
-                    className="h-12" 
-                    required 
-                    disabled={isDisabled} 
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="startTime" className="text-base font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-green-600" />
-                    <span>Время начала</span>
-                  </Label>
-                  <Select 
-                    value={getTimeFromISOString(formData.dateTime)} 
-                    onValueChange={(value) => handleTimeChange('start', value)}
-                    disabled={isDisabled}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Выберите время" />
-                    </SelectTrigger>
-                    <SelectContent position={selectPosition} className="max-h-[40vh]">
-                      {timeOptions.map(time => (
-                        <SelectItem key={`start-${time}`} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startTime" className="text-base font-medium flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-green-600" />
+                      <span>Время начала</span>
+                    </Label>
+                    <Select 
+                      value={getTimeFromISOString(formData.dateTime)} 
+                      onValueChange={(value) => handleTimeChange('start', value)}
+                      disabled={isDisabled}
+                    >
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Выберите время" />
+                      </SelectTrigger>
+                      <SelectContent position={selectPosition} className="max-h-[40vh]">
+                        {timeOptions.map(time => (
+                          <SelectItem key={`start-${time}`} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="endTime" className="text-base font-medium flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-green-600" />
+                      <span>Время окончания</span>
+                    </Label>
+                    <Select 
+                      value={getTimeFromISOString(formData.endTime)} 
+                      onValueChange={(value) => handleTimeChange('end', value)}
+                      disabled={isDisabled}
+                    >
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Выберите время" />
+                      </SelectTrigger>
+                      <SelectContent position={selectPosition} className="max-h-[40vh]">
+                        {timeOptions.map(time => (
+                          <SelectItem key={`end-${time}`} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="endTime" className="text-base font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-green-600" />
-                    <span>Время окончания</span>
+                  <Label htmlFor="menu" className="text-base font-medium flex items-center gap-2">
+                    <UtensilsCrossed className="h-4 w-4 text-green-600" />
+                    <span>Меню (опционально)</span>
                   </Label>
-                  <Select 
-                    value={getTimeFromISOString(formData.endTime)} 
-                    onValueChange={(value) => handleTimeChange('end', value)}
-                    disabled={isDisabled}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Выберите время" />
-                    </SelectTrigger>
-                    <SelectContent position={selectPosition} className="max-h-[40vh]">
-                      {timeOptions.map(time => (
-                        <SelectItem key={`end-${time}`} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Textarea id="menu" name="menu" value={formData.menu || ''} onChange={handleChange} placeholder="Описание заказанных блюд" rows={3} disabled={isDisabled} />
+                </div>
+                
+                <div className="flex justify-between gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={moveToPrevTab}>
+                    Назад
+                  </Button>
+                  {!isDisabled && <Button onClick={handleSubmit}>
+                      {isEditingBooking ? 'Сохранить' : 'Добавить бронирование'}
+                    </Button>}
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="menu" className="text-base font-medium flex items-center gap-2">
-                  <UtensilsCrossed className="h-4 w-4 text-green-600" />
-                  <span>Меню (опционально)</span>
-                </Label>
-                <Textarea id="menu" name="menu" value={formData.menu || ''} onChange={handleChange} placeholder="Описание заказанных блюд" rows={3} disabled={isDisabled} />
-              </div>
-              
-              <div className="flex justify-between gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={moveToPrevTab}>
-                  Назад
-                </Button>
-                {!isDisabled && <Button onClick={handleSubmit}>
-                    {isEditingBooking ? 'Сохранить' : 'Добавить бронирование'}
-                  </Button>}
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>;
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      <ZoneSelectionDialog
+        isOpen={isZoneDialogOpen}
+        onClose={closeZoneDialog}
+        onSelectZone={handleSelectZone}
+        selectedZoneId={formData.zoneId}
+        availableZones={availableZones}
+        isCustomZoneSelected={formData.zoneId === 'other'}
+      />
+    </>
+  );
 };
 
 export default BookingForm;

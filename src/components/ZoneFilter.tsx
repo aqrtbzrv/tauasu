@@ -18,6 +18,7 @@ const ZoneFilter = () => {
     'Летний двор',
     'Террасы',
     'Тапчаны',
+    'VIP беседка',
   ];
 
   const getDisplayName = (type: ZoneType | 'all') => {
