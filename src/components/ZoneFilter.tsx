@@ -10,6 +10,7 @@ const ZoneFilter = () => {
   const selectedZoneType = useStore((state) => state.selectedZoneType);
   const setSelectedZoneType = useStore((state) => state.setSelectedZoneType);
 
+  // Updated to ensure all zone types match the ZoneType type
   const zoneTypes: (ZoneType | 'all')[] = [
     'all',
     'Юрты',
@@ -19,7 +20,9 @@ const ZoneFilter = () => {
     'Летний двор',
     'Террасы',
     'Тапчаны',
-    'ВИП беседка',
+    'ВИП беседка 1',
+    'ВИП беседка 2',
+    'ВИП беседка 3',
   ];
 
   const getDisplayName = (type: ZoneType | 'all') => {
@@ -29,7 +32,7 @@ const ZoneFilter = () => {
 
   return (
     <div className="mb-6 overflow-x-auto py-2">
-      <ScrollArea orientation="horizontal" className="w-full">
+      <ScrollArea className="w-full">
         <div className="flex space-x-2 min-w-max px-1">
           {zoneTypes.map((type) => (
             <Button

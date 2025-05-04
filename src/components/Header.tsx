@@ -21,12 +21,19 @@ interface HeaderProps {
 
 const Header = ({ currentTime }: HeaderProps) => {
   const { currentUser, logout } = useStore();
-  const navigate = useNavigate();
+  // Safe navigation access - only try to get navigate if we're inside Router context
+  const navigate = typeof window !== 'undefined' ? useNavigate() : null;
+
   const isMobile = useIsMobile();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    if (navigate) {
+      navigate('/login');
+    } else {
+      // Fallback if navigate is not available (outside router context)
+      window.location.href = '/login';
+    }
   };
 
   return (
