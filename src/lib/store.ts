@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AppState, Booking, Customer, User, Zone, ZoneType } from './types';
@@ -16,6 +17,9 @@ const initialZones: Zone[] = [
   { id: 'gazebo3', name: 'Беседка 3', type: 'Беседки' },
   { id: 'gazebo4', name: 'Беседка 4', type: 'Беседки' },
   { id: 'gazebo5', name: 'Беседка 5', type: 'Беседки' },
+  { id: 'vip_gazebo1', name: 'ВИП беседка 1', type: 'Беседки' },
+  { id: 'vip_gazebo2', name: 'ВИП беседка 2', type: 'Беседки' },
+  { id: 'vip_gazebo3', name: 'ВИП беседка 3', type: 'Беседки' },
   { id: 'khanShatyr', name: 'Хан-Шатыр', type: 'Хан-Шатыр' },
   { id: 'summerYard', name: 'Летний двор', type: 'Летний двор' },
   { id: 'terrace1', name: 'Терраса 1', type: 'Террасы' },
