@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -12,6 +13,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Users, Calendar, Home, Phone, DollarSign, Clock, UtensilsCrossed } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BookingFormProps {
   isOpen: boolean;
@@ -34,6 +36,8 @@ const BookingForm = ({
     currentUser
   } = useStore();
   const isAdmin = currentUser?.role === 'admin';
+  const isMobile = useIsMobile();
+  
   const [formData, setFormData] = useState<Partial<Booking & { endTime: string }>>({
     zoneId: '',
     clientName: '',
@@ -308,6 +312,8 @@ const BookingForm = ({
     return isoString.split('T')[1].substring(0, 5);
   };
 
+  const selectPosition = isMobile ? "item-aligned" : "popper";
+
   return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] w-[calc(100%-2rem)] mx-auto max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
@@ -344,7 +350,7 @@ const BookingForm = ({
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Выберите зону" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position={selectPosition} className="max-h-[50vh]">
                     {availableZones.length > 0 ? availableZones.map(zone => <SelectItem key={zone.id} value={zone.id}>
                           {zone.name} ({zone.type})
                         </SelectItem>) : <div className="p-2 text-center text-muted-foreground">
@@ -515,7 +521,7 @@ const BookingForm = ({
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Выберите время" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position={selectPosition} className="max-h-[40vh]">
                       {timeOptions.map(time => (
                         <SelectItem key={`start-${time}`} value={time}>
                           {time}
@@ -538,7 +544,7 @@ const BookingForm = ({
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Выберите время" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position={selectPosition} className="max-h-[40vh]">
                       {timeOptions.map(time => (
                         <SelectItem key={`end-${time}`} value={time}>
                           {time}
