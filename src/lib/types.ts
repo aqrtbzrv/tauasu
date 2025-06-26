@@ -16,6 +16,7 @@ export type ZoneType =
   | 'Летний двор' 
   | 'Террасы' 
   | 'Тапчаны'
+  | 'VIP беседка'
   | 'Другое';
 
 export interface Zone {
