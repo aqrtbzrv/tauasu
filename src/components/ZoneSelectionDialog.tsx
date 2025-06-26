@@ -3,7 +3,7 @@ import React from 'react';
 import { useStore } from '@/lib/store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Zone } from '@/lib/types';
+import { Zone, ZoneType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { CheckIcon } from 'lucide-react';
 
@@ -27,7 +27,7 @@ const ZoneSelectionDialog = ({
   const selectedZoneType = useStore((state) => state.selectedZoneType);
   const setSelectedZoneType = useStore((state) => state.setSelectedZoneType);
 
-  const zoneTypes: (string | 'all')[] = [
+  const zoneTypes: (ZoneType | 'all')[] = [
     'all',
     'Юрты',
     'Глэмпинг',
@@ -39,7 +39,7 @@ const ZoneSelectionDialog = ({
     'VIP беседка'
   ];
 
-  const getDisplayName = (type: string | 'all') => {
+  const getDisplayName = (type: ZoneType | 'all') => {
     if (type === 'all') return 'Все зоны';
     return type;
   };
